@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>RAGJudge — Prove your RAG works</title>
+<meta name="description" content="A 100% client-side RAG evaluation harness: score retrieval configs on faithfulness, citations, and relevance.">
+<link rel="stylesheet" href="assets/style.css?v=1">
+</head>
+<body>
+<header class="hero">
+  <div class="wrap">
+    <p class="eyebrow">Eval bench · 001</p>
+    <h1>RAG<span class="bench">Judge</span></h1>
+    <p class="lede">Prove your RAG works. Feed it documents and test questions, pit retrieval
+    configurations against each other, and score every contestant on faithfulness,
+    citation quality, and answer relevance — all in your browser, no API key required.</p>
+    <p style="margin-top:12px">
+      <span class="badge" id="badge-embed">embeddings: checking…</span>
+      <span class="badge" id="badge-mode">answer mode: extractive (no key)</span>
+    </p>
+  </div>
+</header>
+
+<main><div class="wrap">
+
+  <section class="card" id="sec-dataset">
+    <h2><span class="num">1</span>Dataset</h2>
+    <p class="sub">Documents to retrieve from, plus test questions with reference answers and
+    gold sections. A fictional sample dataset is bundled — hit <b>Load sample</b> and skip to step 2.</p>
+    <div>
+      <button class="btn small" id="btn-sample">Load sample dataset</button>
+      <button class="btn small ghost" id="btn-clear-data">Clear</button>
+    </div>
+    <h3 style="font-size:15px;margin:16px 0 4px">Documents <span class="pill" id="doc-count">0</span></h3>
+    <div id="doc-list"></div>
+    <details>
+      <summary style="cursor:pointer;font-size:14px">+ Add a document (paste text)</summary>
+      <label>Title <input type="text" id="new-doc-title" placeholder="e.g. Support FAQ"></label>
+      <label>Sections — one per block, format <span class="pill">### Heading</span> then text
+        <textarea id="new-doc-text" rows="6" placeholder="### Returns&#10;Items can be returned within 30 days...&#10;&#10;### Shipping&#10;Orders ship in 2 business days..."></textarea>
+      </label>
+      <button class="btn small" id="btn-add-doc">Add document</button>
+    </details>
+    <h3 style="font-size:15px;margin:16px 0 4px">Test questions <span class="pill" id="q-count">0</span></h3>
+    <div id="q-list"></div>
+    <details>
+      <summary style="cursor:pointer;font-size:14px">+ Add a test question</summary>
+      <label>Question <input type="text" id="new-q-text" placeholder="How long is the warranty?"></label>
+      <label>Reference answer <input type="text" id="new-q-ref" placeholder="2 years."></label>
+      <label>Gold sections (comma-separated <span class="pill">docId:sectionId</span>)
+        <input type="text" id="new-q-gold" placeholder="manual:warranty"></label>
+      <button class="btn small" id="btn-add-q">Add question</button>
+    </details>
+  </section>
+
+  <section class="card" id="sec-matrix">
+    <h2><span class="num">2</span>Config matrix</h2>
+    <p class="sub">Each combination becomes one contestant. Cosine retrieval needs the embedding
+    model (downloads ~90MB once); without it, cosine configs fall back to BM25 and say so.</p>
+    <div class="grid2">
+      <div>
+        <label>Chunk size (chars)<div class="checks" id="ck-size">
+          <label><input type="checkbox" value="256" checked>256</label>
+          <label><input type="checkbox" value="512">512</label>
+          <label><input type="checkbox" value="1024" checked>1024</label>
+        </div></label>
+        <label>Chunk overlap (chars)<div class="checks" id="ck-overlap">
+          <label><input type="checkbox" value="0">0</label>
+          <label><input type="checkbox" value="50" checked>50</label>
+        </div></label>
+      </div>
+      <div>
+        <label>Top-k<div class="checks" id="ck-topk">
+          <label><input type="checkbox" value="3" checked>3</label>
+          <label><input type="checkbox" value="5" checked>5</label>
+          <label><input type="checkbox" value="10">10</label>
+        </div></label>
+        <label>Retrieval<div class="checks" id="ck-retr">
+          <label><input type="checkbox" value="bm25" checked>BM25</label>
+          <label><input type="checkbox" value="cosine" checked>cosine</label>
+        </div></label>
+      </div>
+    </div>
+    <p class="sub" style="margin:8px 0">Contestants: <b id="contestant-count" style="color:var(--accent)">0</b>
+      <span id="matrix-warn" class="badge warn hidden">large matrix — may take a while</span></p>
+    <div class="progress hidden" id="run-progress"><div></div></div>
+    <button class="btn" id="btn-run">▶ Run evaluation</button>
+    <span class="sub" id="run-status" role="status"></span>
+  </section>
+
+  <section class="card hidden" id="sec-results">
+    <h2><span class="num">3</span>Leaderboard</h2>
+    <p class="sub">Ranked by mean faithfulness, tie-break mean relevance. Click a column header to re-sort.</p>
+    <div style="overflow-x:auto"><table class="board" id="board">
+      <thead><tr>
+        <th data-k="rank">#</th><th data-k="config">Contestant</th>
+        <th data-k="faithfulness" class="num">Faithful</th>
+        <th data-k="citationP" class="num">Cite P</th>
+        <th data-k="citationR" class="num">Cite R</th>
+        <th data-k="relevance" class="num">Relevant</th>
+        <th data-k="latencyMs" class="num">ms</th>
+      </tr></thead>
+      <tbody></tbody>
+    </table></div>
+    <canvas class="chart" id="chart"></canvas>
+    <h3 style="font-size:15px;margin:18px 0 4px">Per-question drill-down</h3>
+    <label style="max-width:520px">Question
+      <select id="drill-q"></select>
+    </label>
+    <div id="drill"></div>
+  </section>
+
+  <section class="card" id="sec-judge">
+    <h2><span class="num">4</span>LLM judge <span class="sub" style="display:inline">(optional, BYOK)</span></h2>
+    <p class="sub">Re-scores faithfulness 1–5 with a rationale, shown <b>side-by-side</b> with the
+    heuristic score — it never replaces it. Runs against the latest leaderboard.</p>
+    <div class="grid2">
+      <div>
+        <label>Provider
+          <select id="llm-provider">
+            <option value="openai">OpenAI</option>
+            <option value="gemini">Google Gemini</option>
+            <option value="groq">Groq</option>
+            <option value="custom">Custom (OpenAI-compatible)</option>
+          </select>
+        </label>
+        <label>API key <input type="password" id="llm-key" autocomplete="off"></label>
+      </div>
+      <div id="llm-custom" class="hidden">
+        <label>Base URL <input type="url" id="llm-base" placeholder="https://openrouter.ai/api/v1"></label>
+        <label>Model <input type="text" id="llm-model" placeholder="e.g. deepseek/deepseek-chat"></label>
+      </div>
+    </div>
+    <div class="checks" style="margin-top:6px">
+      <label><input type="checkbox" id="llm-answer"> Also generate answers with the LLM (instead of extractive)</label>
+    </div>
+    <button class="btn small" id="btn-key-save">Save key</button>
+    <button class="btn small ghost" id="btn-judge">⚖ Run LLM judge on latest results</button>
+    <span class="sub" id="judge-status" role="status"></span>
+  </section>
+
+  <section class="card hidden" id="sec-export">
+    <h2><span class="num">5</span>Export</h2>
+    <p class="sub">Full report as Markdown, leaderboard as CSV.</p>
+    <button class="btn small" id="btn-md">⬇ report.md</button>
+    <button class="btn small" id="btn-csv">⬇ leaderboard.csv</button>
+  </section>
+
+  <div class="foot">
+    RAGJudge runs 100% in your browser — documents, keys, and results never leave this device.
+    Heuristic scores are token-overlap based, not NLI: see <a href="README.md">README</a> for metric
+    definitions and honest limitations. All scorers are original implementations.
+  </div>
+
+</div></main>
+
+<script src="https://cdn.jsdelivr.net/npm/@xenova/transformers@2.17.1"></script>
+<script src="assets/text.js?v=1"></script>
+<script src="assets/chunk.js?v=1"></script>
+<script src="assets/sample-data.js?v=1"></script>
+<script src="assets/retrieval.js?v=1"></script>
+<script src="assets/metrics.js?v=1"></script>
+<script src="assets/answer.js?v=1"></script>
+<script src="assets/embeddings.js?v=1"></script>
+<script src="assets/llm.js?v=1"></script>
+<script src="assets/runner.js?v=1"></script>
+<script src="assets/export.js?v=1"></script>
+<script src="assets/charts.js?v=1"></script>
+<script src="assets/app.js?v=1"></script>
+</body>
+</html>
