@@ -1,0 +1,118 @@
+/* RAGJudge — BENCH theme: graphite lab bench + signal yellow. */
+:root {
+  --bg: #14161a;
+  --panel: #1d2127;
+  --panel2: #232932;
+  --border: #2c323b;
+  --ink: #e8e6e1;
+  --dim: #9aa3b2;
+  --accent: #ffd21f;      /* signal yellow */
+  --accent-ink: #14161a;
+  --pass: #7ee787;
+  --fail: #ff7b72;
+  --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0; background: var(--bg); color: var(--ink);
+  font-family: Inter, system-ui, -apple-system, "Segoe UI", sans-serif;
+  line-height: 1.55;
+}
+header.hero {
+  border-bottom: 3px solid var(--accent);
+  background:
+    linear-gradient(rgba(255,210,31,.045) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,210,31,.045) 1px, transparent 1px),
+    #171a1f;
+  background-size: 28px 28px;
+  padding: 34px 20px 26px;
+}
+.wrap { max-width: 1080px; margin: 0 auto; padding: 0 20px; }
+.eyebrow {
+  font-family: var(--mono); font-size: 12px; letter-spacing: .18em;
+  color: var(--accent); text-transform: uppercase; margin: 0 0 8px;
+}
+h1 { margin: 0 0 6px; font-size: 40px; letter-spacing: -.01em; }
+h1 .bench { color: var(--accent); }
+.lede { color: var(--dim); max-width: 640px; margin: 0; }
+main .wrap { padding-top: 26px; padding-bottom: 60px; }
+section.card {
+  background: var(--panel); border: 1px solid var(--border);
+  border-radius: 10px; padding: 20px 22px; margin-bottom: 22px;
+}
+section.card > h2 {
+  margin: 0 0 4px; font-size: 20px;
+  font-family: var(--mono); letter-spacing: .02em;
+}
+section.card > h2 .num {
+  display: inline-block; background: var(--accent); color: var(--accent-ink);
+  font-size: 13px; padding: 1px 8px; border-radius: 4px; margin-right: 8px;
+  vertical-align: 2px;
+}
+.sub { color: var(--dim); font-size: 14px; margin: 0 0 14px; }
+.grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+@media (max-width: 760px) { .grid2 { grid-template-columns: 1fr; } }
+label { display: block; font-size: 14px; margin: 10px 0; }
+input[type=text], input[type=url], input[type=password], textarea, select {
+  width: 100%; background: #101318; color: var(--ink);
+  border: 1px solid var(--border); border-radius: 6px;
+  padding: 9px 10px; font-size: 14px; margin-top: 4px;
+  font-family: inherit;
+}
+textarea { resize: vertical; }
+input:focus, textarea:focus, select:focus { outline: 2px solid var(--accent); outline-offset: 1px; }
+.checks { display: flex; flex-wrap: wrap; gap: 8px 18px; margin: 6px 0 4px; }
+.checks label { display: inline-flex; align-items: center; gap: 6px; margin: 2px 0; font-family: var(--mono); font-size: 13px; }
+.btn {
+  background: var(--accent); color: var(--accent-ink); border: 0;
+  font-weight: 700; font-size: 15px; padding: 11px 22px; border-radius: 8px;
+  cursor: pointer; margin: 8px 8px 0 0;
+}
+.btn:hover { filter: brightness(1.08); }
+.btn:disabled { opacity: .45; cursor: not-allowed; }
+.btn.ghost { background: transparent; color: var(--ink); border: 1px solid var(--border); font-weight: 500; }
+.btn.small { font-size: 13px; padding: 7px 14px; }
+.badge {
+  display: inline-block; font-family: var(--mono); font-size: 12px;
+  padding: 2px 10px; border-radius: 20px; border: 1px solid var(--border);
+  color: var(--dim); margin-right: 8px;
+}
+.badge.on { color: var(--accent); border-color: var(--accent); }
+.badge.warn { color: var(--fail); border-color: var(--fail); }
+table.board { width: 100%; border-collapse: collapse; font-size: 14px; margin-top: 10px; }
+table.board th, table.board td { padding: 9px 10px; text-align: left; border-bottom: 1px solid var(--border); }
+table.board th { font-family: var(--mono); font-size: 12px; color: var(--dim); cursor: pointer; user-select: none; white-space: nowrap; }
+table.board th:hover { color: var(--accent); }
+table.board td.num, table.board th.num { text-align: right; font-family: var(--mono); }
+tr.winner td { background: rgba(255,210,31,.07); }
+tr.winner td:first-child { border-left: 3px solid var(--accent); }
+.pill { font-family: var(--mono); font-size: 12px; padding: 1px 8px; border-radius: 4px; background: var(--panel2); }
+.pill.good { color: var(--pass); } .pill.bad { color: var(--fail); } .pill.mid { color: var(--accent); }
+details.drill { border: 1px solid var(--border); border-radius: 8px; margin: 10px 0; background: var(--panel2); }
+details.drill summary { padding: 10px 14px; cursor: pointer; font-weight: 600; }
+details.drill .body { padding: 0 14px 14px; }
+.cfg { border-top: 1px dashed var(--border); padding: 10px 0; }
+.cfg h4 { margin: 6px 0; font-family: var(--mono); font-size: 14px; color: var(--accent); }
+.answer-box {
+  background: #101318; border: 1px solid var(--border); border-radius: 6px;
+  padding: 10px 12px; font-size: 14px; white-space: pre-wrap; margin: 8px 0;
+}
+.chunk { font-size: 13px; color: var(--dim); border-left: 2px solid var(--border); padding: 4px 10px; margin: 6px 0; }
+.chunk b { color: var(--ink); font-family: var(--mono); font-size: 12px; }
+.claim { font-size: 13px; margin: 3px 0; }
+.claim .v { font-family: var(--mono); font-size: 11px; padding: 0 6px; border-radius: 3px; margin-right: 6px; }
+.v.supported { background: rgba(126,231,135,.15); color: var(--pass); }
+.v.unsupported { background: rgba(255,123,114,.15); color: var(--fail); }
+.v.skipped { background: var(--panel2); color: var(--dim); }
+canvas.chart { width: 100%; height: 260px; display: block; margin-top: 12px; }
+.progress { height: 8px; background: var(--panel2); border-radius: 4px; overflow: hidden; margin: 10px 0; }
+.progress > div { height: 100%; background: var(--accent); width: 0%; transition: width .2s; }
+.qrow { display: flex; gap: 8px; align-items: baseline; padding: 8px 0; border-bottom: 1px solid var(--border); font-size: 14px; }
+.qrow .qid { font-family: var(--mono); color: var(--accent); min-width: 36px; }
+.qrow .del { margin-left: auto; }
+.docitem { border: 1px solid var(--border); border-radius: 8px; padding: 10px 14px; margin: 8px 0; background: var(--panel2); }
+.docitem h4 { margin: 0 0 4px; }
+.docitem .meta { font-size: 13px; color: var(--dim); font-family: var(--mono); }
+.foot { color: var(--dim); font-size: 13px; border-top: 1px solid var(--border); padding: 18px 0 40px; }
+.foot a { color: var(--accent); }
+.hidden { display: none !important; }
